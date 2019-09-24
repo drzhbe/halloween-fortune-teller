@@ -1,0 +1,119 @@
+<html>
+	<head>
+		<title>Моя страница</title>
+	</head>
+	<body>
+		<button id="speak">Говорить</button>
+		<script type="text/javascript">
+			function getPhrases() {
+				return [
+					[
+						'Гляжу в твоё будущее и вижу там.',
+						'Ворожуу - ворожуу, будущее знать хочу.',
+						'Вся твоя судьба как на ладони у меня.',
+						'Доверься мне и расскажу всё про твою судьбу без утайки.',
+					],
+					[
+						'Дальняя дорога выпадет тебе.',
+						'Много багов пофиксить придётся, много тикетов закрыть.',
+					],
+					[
+						'А затем',
+						'Хотя нет',
+						'А перед этим',
+					],
+					[
+						'Трудный релиз предстоит.',
+						'Будет великое множество пользователей благодарных.',
+					],
+				]
+			}
+
+			var random_sequences = []
+			var counter = 0;
+
+			// http://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
+			function shuffle(array) {
+				var currentIndex = array.length, temporaryValue, randomIndex;
+
+			  	// While there remain elements to shuffle...
+			  	while (0 !== currentIndex) {
+
+			    	// Pick a remaining element...
+			    	randomIndex = Math.floor(Math.random() * currentIndex);
+			    	currentIndex -= 1;
+
+			    	// And swap it with the current element.
+			    	temporaryValue = array[currentIndex];
+			    	array[currentIndex] = array[randomIndex];
+			    	array[randomIndex] = temporaryValue;
+			  	}
+
+			  	return array;
+			}
+
+			function initRandom() {
+				var phrases = getPhrases();
+				for (var i = 0; i < phrases.length; ++i)
+				{
+					var len = phrases[i].length;
+					var pattern = []
+					for (var j = 0; j < len; ++j)
+					{
+						pattern.push(j);
+					}
+
+					random_sequences[i] = shuffle(pattern);
+					for (var j = 0; j < 1000; ++j)
+					{
+						var last_idx = random_sequences[i].length - 1;
+						do {
+							var chunk = shuffle(pattern);
+							if (random_sequences[i][last_idx] != chunk[0])
+							{
+								random_sequences[i] = random_sequences[i].concat(chunk);
+								break;
+							}
+						} while(true);
+					}
+				}
+				console.log(random_sequences);
+			}
+
+			function getRandomPhrases() {
+				var phrases = getPhrases();
+				var res = [];
+
+				for (var chunk_idx = 0; chunk_idx < phrases.length; ++chunk_idx)
+				{
+					var randox_idx = random_sequences[chunk_idx][counter];
+					var random_phrase = phrases[chunk_idx][randox_idx];
+					res[chunk_idx] = random_phrase;
+				}
+				counter++;
+
+				console.log(res);
+				return res;
+			}
+
+			function speakPhrase(phrase, callback) {
+				var utterance = new SpeechSynthesisUtterance(phrase);
+				utterance.lang = 'ru-RU'
+				utterance.pitch = 0.1
+				utterance.rate = 0.8
+				utterance.onend = callback
+ 				speechSynthesis.speak(utterance);
+			}
+
+			function speak(phrase, callback) {
+				var phrases = phrase || getRandomPhrases().join(' ');
+				speakPhrase(phrases, callback);
+ 			}
+
+ 			document.getElementById("speak").addEventListener("click", speak);
+
+			initRandom();
+		</script>
+		<script src='app.js'></script>
+	</body>
+</html>
